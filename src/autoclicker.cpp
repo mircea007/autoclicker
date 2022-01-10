@@ -342,7 +342,7 @@ int main( int argc, char *argv[] ){
   
   copy = new MimicMouseButFaster( cps );
 
-  while( 1 );// run while program is interupted
+  while( 1 );// run while program is not interupted
   
   return 0;
 }
