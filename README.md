@@ -31,4 +31,10 @@ there are 5 threads running:
 * autoclicker for the left click   (implemented by `AsyncAutoClicker`)
 * autoclicker for the right click  (implemented by `AsyncAutoClicker`)
 * listens for real mouse clicks (needs access to `/dev/input/mice`) (worker thread in `MimicMouseButFaster`)
-* listens for hotkey (hardcoded to `Alt`) (basically a keylogger)   (listen thread in `MimicMouseButFaster`)
+* listens for CapsLock to toggle autoclicking (listen thread in `MimicMouseButFaster`)
+
+## TO DO
+
+* Ctrl+C not working
+* Crashes on window close
+* make not important logs show only in verbose mode
