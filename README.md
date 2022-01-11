@@ -38,3 +38,5 @@ there are 5 threads running:
 * Ctrl+C not working
 * Crashes on window close
 * make not important logs show only in verbose mode
+* get rid of sudo requirement
+
