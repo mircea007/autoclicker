@@ -126,6 +126,8 @@ class AsyncAutoClicker : public SyncAutoClicker {
     static void *worker( void *args ){
       AsyncAutoClicker *obj = (AsyncAutoClicker *)args;
       
+      info( "autoclicker initialized\n" );
+      
       pthread_mutex_lock( &obj->status_flag_mtx );
       while( obj->status_flag != EXIT ){
         if( obj->status_flag == CLICKING )
@@ -145,12 +147,23 @@ class AsyncAutoClicker : public SyncAutoClicker {
 
   public:
     inline AsyncAutoClicker( unsigned int button, double cps = DEFAULT_CPS ) : SyncAutoClicker( button, cps ){
+      char thread_name[100] = "clicker-";
+      int i = -1;
+      
       pthread_mutex_init( &DELAY_mtx, NULL );
 
       status_flag = WAITING;
       pthread_mutex_init( &status_flag_mtx, NULL );
+      
+      while( thread_name[++i] );
+
+      if( button == Button1 )
+        strcpy( thread_name + i, "left" );
+      else
+        strcpy( thread_name + i, "right" );
 
       pthread_create( &worker_thread, NULL, worker, (void *)this );
+      pthread_setname_np( worker_thread, thread_name );
     }
 
     inline ~AsyncAutoClicker(){
@@ -232,6 +245,8 @@ class MimicMouseButFaster {
       int bytes, left = 0, right = 0, newleft, newright;
       unsigned char data[3];
       
+      info( "mouse listener initialized\n" );
+
       pthread_mutex_lock( &obj->status_flag_mtx );
       while( obj->status_flag != EXIT ){
         pthread_mutex_unlock( &obj->status_flag_mtx );
@@ -277,7 +292,7 @@ class MimicMouseButFaster {
       XEvent event;
       unsigned int hotkey = XKeysymToKeycode( obj->display, XK_Caps_Lock );
       
-      info( "In listen thread -> OK\n" );
+      info( "hotkey listener initialized\n" );
       
       pthread_mutex_lock( &obj->status_flag_mtx );
       while( obj->status_flag != EXIT ){
@@ -285,12 +300,12 @@ class MimicMouseButFaster {
         
         XNextEvent( obj->display, &event );
         
-        info( "event\n" );
+        //info( "event\n" );
 
         pthread_mutex_lock( &obj->is_active_mtx );
         switch( event.type ){
           case DestroyNotify:
-            warn( "window destroy!\n" );
+            //warn( "window destroy!\n" );
             XGetInputFocus( obj->display, &obj->curFocus, &obj->revert );
             XSelectInput( obj->display, obj->curFocus, LISTEN_MASK );
             break;
@@ -305,12 +320,12 @@ class MimicMouseButFaster {
             break;
           case KeyPress:
             if( event.xkey.keycode == hotkey ){
-              info( "autoclick turned %s\n", obj->is_active ? "off" : "on");
+              //info( "autoclick turned %s\n", obj->is_active ? "off" : "on");
               obj->is_active ^= 1;
             }
             break;
-          default:
-            warn( "unknown event: searching in lookup table...\n" );
+          /*default:
+            //warn( "unknown event: searching in lookup table...\n" );
             int i = -1;
             while( (++i) < 33 && XEvent_types[i] != event.type );
             
@@ -318,7 +333,7 @@ class MimicMouseButFaster {
               warn( "uncaught event %d\n", event.type );
             else
               warn( "event is at index %d\n", i );
-            break;
+            break;*/
         }
         pthread_mutex_unlock( &obj->is_active_mtx );
 
@@ -354,7 +369,10 @@ class MimicMouseButFaster {
       XSelectInput( display, curFocus, LISTEN_MASK );
 
       pthread_create( &worker_thread, NULL, worker, (void *)this );
+      pthread_setname_np( worker_thread, "worker" );
+
       pthread_create( &listen_thread, NULL, listen, (void *)this );
+      pthread_setname_np( listen_thread, "listen" );
     }
     
     ~MimicMouseButFaster(){
@@ -395,6 +413,8 @@ void kill_handle( int s ){
 
 int main( int argc, char *argv[] ){
   double cps = DEFAULT_CPS;
+  
+  pthread_setname_np( pthread_self(), "main" );
 
   if( signal( SIGINT, kill_handle ) == SIG_ERR )
     error( "Unable to set SIGINT handler\n" );
