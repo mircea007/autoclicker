@@ -5,57 +5,28 @@
 #include <time.h>    // srand( time( NULL ) )
 #include <fcntl.h>   // to read form mouse device file
 #include <signal.h>  // Ctrl+C
-#include <stdarg.h>  // for printf wrapper functions
 
 // X11
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <X11/extensions/XInput2.h>
 
 #include <pthread.h> // for async stuff
 
+#include "log.h"
+
 const double DEFAULT_CPS = 20.0;
 
-// logging
-#define ANSI_BOLD   "\e[1m"
-#define ANSI_NORMAL "\e[0m"
-#define ANSI_RED    "\e[38;5;9m"
-#define ANSI_YELLOW "\e[38;5;11m"
-#define ANSI_GREEN  "\e[38;5;10m"
-
-#define ERROR_PREFIX   ANSI_RED    "(!)" ANSI_NORMAL " ERROR -> "
-#define WARNING_PREFIX ANSI_YELLOW "(!)" ANSI_NORMAL " WARN --> "
-#define INFO_PREFIX    ANSI_GREEN  "(!)" ANSI_NORMAL " INFO --> "
-
-static inline void error( const char *format, ... ){
-  va_list ap;
-  
-  fputs( ERROR_PREFIX, stderr );
-  va_start( ap, format );
-  vfprintf( stderr, format, ap );
-  va_end( ap );
-
-  exit( 1 );
-}
-
-static inline void warn( const char *format, ... ){
-  va_list ap;
-  
-  fputs( WARNING_PREFIX, stderr );
-  va_start( ap, format );
-  vfprintf( stderr, format, ap );
-  va_end( ap );
-}
-
-static inline void info( const char *format, ... ){
-  va_list ap;
-  
-  fputs( INFO_PREFIX, stderr );
-  va_start( ap, format );
-  vfprintf( stderr, format, ap );
-  va_end( ap );
-}
+// event type lookup table
+int XEvent_types[33] = {
+  KeyPress,       KeyRelease,       ButtonPress,     ButtonRelease,    MotionNotify,
+  EnterNotify,    LeaveNotify,      FocusIn,         FocusOut,         KeymapNotify,
+  Expose,         GraphicsExpose,   NoExpose,        CirculateRequest, ConfigureRequest,
+  MapRequest,     ResizeRequest,    CirculateNotify, ConfigureNotify,  CreateNotify,
+  DestroyNotify,  GravityNotify,    MapNotify,       MappingNotify,    ReparentNotify,
+  UnmapNotify,    VisibilityNotify, ColormapNotify,  ClientMessage,    PropertyNotify,
+  SelectionClear, SelectionNotify,  SelectionRequest
+};
 
 // https://gist.github.com/pioz/726474
 class SyncAutoClicker {
@@ -232,43 +203,6 @@ class AsyncAutoClicker : public SyncAutoClicker {
     }
 };
 
-int types[33] = {
-  KeyPress,
-  KeyRelease,
-  ButtonPress,
-  ButtonRelease,
-  MotionNotify,
-  EnterNotify,
-  LeaveNotify,
-  FocusIn,
-  FocusOut,
-  KeymapNotify,
-  Expose,
-  GraphicsExpose,
-  NoExpose,
-  CirculateRequest,
-  ConfigureRequest,
-  MapRequest,
-  ResizeRequest,
-  CirculateNotify,
-  ConfigureNotify,
-  CreateNotify,
-  DestroyNotify,
-  GravityNotify,
-  MapNotify,
-  MappingNotify,
-  ReparentNotify,
-  UnmapNotify,
-  VisibilityNotify,
-  ColormapNotify,
-  ClientMessage,
-  PropertyNotify,
-  SelectionClear,
-  SelectionNotify,
-  SelectionRequest
-};
-
-
 class MimicMouseButFaster {
   protected:
     AsyncAutoClicker *clickers[2];
@@ -378,7 +312,7 @@ class MimicMouseButFaster {
           default:
             warn( "unknown event: searching in lookup table...\n" );
             int i = -1;
-            while( (++i) < 33 && types[i] != event.type );
+            while( (++i) < 33 && XEvent_types[i] != event.type );
             
             if( i >= 33 )
               warn( "uncaught event %d\n", event.type );
