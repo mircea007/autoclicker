@@ -86,7 +86,7 @@ class SyncAutoClicker {
       display = XOpenDisplay( NULL );
       
       if( !display )
-        error( "Can't open display!\n" );
+        log_error( "Can't open display!\n" );
       
       srand( time( NULL ) );
     }
@@ -126,7 +126,7 @@ class AsyncAutoClicker : public SyncAutoClicker {
     static void *worker( void *args ){
       AsyncAutoClicker *obj = (AsyncAutoClicker *)args;
       
-      info( "autoclicker initialized\n" );
+      log_info( "autoclicker initialized\n" );
       
       pthread_mutex_lock( &obj->status_flag_mtx );
       while( obj->status_flag != EXIT ){
@@ -245,7 +245,7 @@ class MimicMouseButFaster {
       int bytes, left = 0, right = 0, newleft, newright;
       unsigned char data[3];
       
-      info( "mouse listener initialized\n" );
+      log_info( "mouse listener initialized\n" );
 
       pthread_mutex_lock( &obj->status_flag_mtx );
       while( obj->status_flag != EXIT ){
@@ -292,7 +292,7 @@ class MimicMouseButFaster {
       XEvent event;
       unsigned int hotkey = XKeysymToKeycode( obj->display, XK_Caps_Lock );
       
-      info( "hotkey listener initialized\n" );
+      log_info( "hotkey listener initialized\n" );
       
       pthread_mutex_lock( &obj->status_flag_mtx );
       while( obj->status_flag != EXIT ){
@@ -351,7 +351,7 @@ class MimicMouseButFaster {
       fd = open( pDevice, O_RDWR );
       
       if( fd == -1 )
-        error( "Coudn't open %s\n", pDevice );
+        log_error( "Coudn't open %s\n", pDevice );
       
       status_flag = NORMAL;
       pthread_mutex_init( &status_flag_mtx, NULL );
@@ -361,7 +361,7 @@ class MimicMouseButFaster {
 
       display = XOpenDisplay( NULL );
       if( !display )
-        error( "Can't open display!\n" );
+        log_error( "Can't open display!\n" );
 
       root = DefaultRootWindow( display );
 
@@ -399,7 +399,7 @@ MimicMouseButFaster *copy;
 
 void kill_handle( int s ){
   fputc( '\r', stderr );// hide ^C when run in terminal
-  info( "Quiting...\n" );
+  log_info( "Quiting...\n" );
   
   if( copy ){
     delete copy;
@@ -414,16 +414,18 @@ void kill_handle( int s ){
 int main( int argc, char *argv[] ){
   double cps = DEFAULT_CPS;
   
+  log_set_verbose_level( LOG_ALLOW_WARN | LOG_ALLOW_INFO | LOG_ALLOW_DEBUG );
+  
   pthread_setname_np( pthread_self(), "main" );
 
   if( signal( SIGINT, kill_handle ) == SIG_ERR )
-    error( "Unable to set SIGINT handler\n" );
+    log_error( "Unable to set SIGINT handler\n" );
   
   if( argc > 1 )
     if( sscanf( argv[1], "%lf", &cps ) != 1 )
-      error( "Clickrate (CPS) value must be a number\n" );
+      log_error( "Clickrate (CPS) value must be a number\n" );
   
-  info( "Clickrate (CPS) is set to %lf\n", cps );
+  log_debug( "Clickrate (CPS) is set to %lf\n", cps );
   
   copy = new MimicMouseButFaster( cps );
 
