@@ -1,3 +1,5 @@
+#pragma once
+
 #define LOG_ALLOW_DEBUG 1
 #define LOG_ALLOW_INFO  2
 #define LOG_ALLOW_WARN  4
