@@ -1,5 +1,7 @@
 # Currently Unnamed Autoclicker
 
+[![Linux](https://svgshare.com/i/Zhy.svg)](https://svgshare.com/i/Zhy.svg) [![GitHub version](https://badge.fury.io/gh/mircea007%2Fautoclicker.svg)](https://github.com/mircea007/autoclicker) [![GitHub stars](https://img.shields.io/github/stars/mircea007/autoclicker.svg?style=social&label=Star&maxAge=2592000)](https://github.com/mircea007/autoclicker/) [![GitHub watchers](https://img.shields.io/github/watchers/mircea007/autoclicker.svg?style=social&label=Watch&maxAge=2592000)](https://github.com/mircea007/autoclicker/watchers/)
+
 ## Constraints
 
 Is linux + X.org **only**.
