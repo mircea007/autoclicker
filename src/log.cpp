@@ -24,7 +24,7 @@
 #define LOG_INDEX_INFO 1
 #define LOG_INDEX_DEBUG 2
 
-int allow[3];
+static int allow[3] = { 1, 1, 1 };// initialy allow everything
 
 void log_set_verbose_level( int mask ){
   allow[LOG_INDEX_WARN]  = !!(mask & LOG_ALLOW_WARN);
@@ -47,7 +47,7 @@ void log_error( const char *format, ... ){
 }
 
 void log_warn( const char *format, ... ){
-  if( !allow[LOG_INDEX_WARN] );
+  if( !allow[LOG_INDEX_WARN] ) return;
   
   va_list ap;
   char thread_name[100];
@@ -61,7 +61,7 @@ void log_warn( const char *format, ... ){
 }
 
 void log_info( const char *format, ... ){
-  if( !allow[LOG_INDEX_INFO] );
+  if( !allow[LOG_INDEX_INFO] ) return;
   
   va_list ap;
   char thread_name[100];
@@ -75,7 +75,7 @@ void log_info( const char *format, ... ){
 }
 
 void log_debug( const char *format, ... ){
-  if( !allow[LOG_INDEX_DEBUG] );
+  if( !allow[LOG_INDEX_DEBUG] ) return;
   
   va_list ap;
   char thread_name[100];

@@ -1,10 +1,7 @@
 #pragma once
 
 #include <pthread.h> // for async stuff
-#include <unistd.h>  // usleep()
-#include <fcntl.h>   // to read form mouse device file
 
-#include "log.h"
 #include "autoclickers.h"
 
 class MimicMouseButFaster {

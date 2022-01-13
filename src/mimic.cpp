@@ -1,4 +1,8 @@
+#include <unistd.h>  // usleep()
+#include <fcntl.h>   // to read form mouse device file
+
 #include "mimic.h"
+#include "log.h"
 
 void *MimicMouseButFaster::worker( void *args ){
   MimicMouseButFaster *obj = (MimicMouseButFaster *)args;
