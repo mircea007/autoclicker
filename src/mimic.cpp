@@ -1,5 +1,6 @@
-#include <unistd.h>  // usleep()
-#include <fcntl.h>   // to read form mouse device file
+#include <unistd.h> // usleep()
+#include <fcntl.h>  // to read form mouse device file
+#include <stdlib.h> // system()
 
 #include "mimic.h"
 #include "log.h"
@@ -11,10 +12,7 @@ void *MimicMouseButFaster::worker( void *args ){
   
   log_info( "mouse listener initialized\n" );
 
-  pthread_mutex_lock( &obj->status_flag_mtx );
-  while( obj->status_flag != EXIT ){
-    pthread_mutex_unlock( &obj->status_flag_mtx );
-
+  while( 1 ){// thread will exit when killed by destructor
     bytes = read( obj->fd, data, sizeof( data ) );
     
     pthread_mutex_lock( &obj->is_active_mtx );
@@ -44,8 +42,6 @@ void *MimicMouseButFaster::worker( void *args ){
       right = newright;
     }
     pthread_mutex_unlock( &obj->is_active_mtx );
-
-    pthread_mutex_lock( &obj->status_flag_mtx );
   }
 
   return NULL;
@@ -118,7 +114,7 @@ MimicMouseButFaster::MimicMouseButFaster( double cps = DEFAULT_CPS ){
   
   status_flag = NORMAL;
   pthread_mutex_init( &status_flag_mtx, NULL );
-  
+
   is_active = 0;
   pthread_mutex_init( &is_active_mtx, NULL );
 
@@ -139,15 +135,26 @@ MimicMouseButFaster::MimicMouseButFaster( double cps = DEFAULT_CPS ){
 }
 
 MimicMouseButFaster::~MimicMouseButFaster(){
+  pthread_cancel( worker_thread );// kill worker thread
+  // this works because killing a thread in a read() call
+  // is suposedly ok (acording to stackoverflow)
+  
   pthread_mutex_lock( &status_flag_mtx );
   status_flag = EXIT;
   pthread_mutex_unlock( &status_flag_mtx );
   
-  pthread_join( worker_thread, NULL );// wait for thread to exit
-  pthread_join( listen_thread, NULL );// wait for thread to exit
+  // to exit the hotkey listen thread we will send
+  // a key press event to make XNextEvent() finish
 
-  pthread_mutex_destroy( &status_flag_mtx );
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wunused-result"// gcc magic to ingore usless warning
+  
+  system( "xdotool key Caps_Lock && xdotool key Caps_Lock" );
+
+  #pragma GCC diagnostic pop
+  
   pthread_mutex_destroy( &is_active_mtx );
+  pthread_mutex_destroy( &status_flag_mtx );
   
   close( fd );
   

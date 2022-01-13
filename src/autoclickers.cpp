@@ -103,7 +103,6 @@ AsyncAutoClicker::~AsyncAutoClicker(){
   status_flag = EXIT;
   pthread_mutex_unlock( &status_flag_mtx );
   
-  
   // wait for thread to finish
   pthread_join( worker_thread, NULL );
 

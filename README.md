@@ -35,8 +35,6 @@ there are 5 threads running:
 
 ## TO DO
 
-* Ctrl+C not working
 * Crashes on window close
-* make not important logs show only in verbose mode
-* get rid of sudo requirement
-
+* get rid of sudo requirement (would also merge `listen` and `worker` threads in `MimicMouseButFaster`)
+* user friendly (maybe system tray icon or gui application)
