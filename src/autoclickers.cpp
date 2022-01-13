@@ -1,3 +1,8 @@
+#include <stdlib.h>  // rand()
+#include <unistd.h>  // usleep()
+#include <time.h>    // srand( time( NULL ) )
+#include <string.h>  // memset()
+
 #include "autoclickers.h"
 
 // implementation of SyncAutoClicker

@@ -5,13 +5,8 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-#include <stdlib.h>  // rand()
-#include <string.h>  // memset()
-#include <unistd.h>  // usleep()
-#include <time.h>    // srand( time( NULL ) )
-#include <fcntl.h>   // to read form mouse device file
-
 #include <pthread.h>
+
 #include "log.h"
 
 const int DEFAULT_CPS = 20;

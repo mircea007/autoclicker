@@ -1,8 +1,5 @@
 #include <stdio.h>   // duh
-#include <stdlib.h>  // exit(), rand()
-#include <string.h>  // memset()
 #include <unistd.h>  // usleep()
-#include <time.h>    // srand( time( NULL ) )
 #include <fcntl.h>   // to read form mouse device file
 #include <signal.h>  // Ctrl+C
 
