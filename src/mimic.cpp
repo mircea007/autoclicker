@@ -62,16 +62,19 @@ void *MimicMouseButFaster::listen( void *args ){
     
     XNextEvent( obj->display, &event );
     
-    //info( "event\n" );
+    log_info( "event\n" );
 
     pthread_mutex_lock( &obj->is_active_mtx );
+    log_info( "ok\n" );
     switch( event.type ){
       case DestroyNotify:
+        log_info( "ok1\n" );
         //warn( "window destroy!\n" );
         XGetInputFocus( obj->display, &obj->curFocus, &obj->revert );
         XSelectInput( obj->display, obj->curFocus, LISTEN_MASK );
         break;
       case FocusOut:
+        log_info( "ok2\n" );
         if( obj->curFocus != obj->root )
           XSelectInput( obj->display, obj->curFocus, 0 );
         XGetInputFocus( obj->display, &obj->curFocus, &obj->revert );
@@ -81,6 +84,7 @@ void *MimicMouseButFaster::listen( void *args ){
 
         break;
       case KeyPress:
+        log_info( "ok3\n" );
         if( event.xkey.keycode == hotkey ){
           obj->is_active ^= 1;
           log_debug( "autoclick turned %s\n", obj->is_active ? "on" : "off");
@@ -146,6 +150,8 @@ MimicMouseButFaster::MimicMouseButFaster( double cps = DEFAULT_CPS ){
     log_error( "Can't open display!\n" );
 
   root = DefaultRootWindow( display );
+  
+  XSetErrorHandler( catcher );
 
   XGetInputFocus( display, &curFocus, &revert );
   XSelectInput( display, curFocus, LISTEN_MASK );
@@ -181,9 +187,19 @@ MimicMouseButFaster::~MimicMouseButFaster(){
   
   close( fd );
   
+  XSetErrorHandler( NULL );
+
   XCloseDisplay( display );
 
   delete clickers[0];
   delete clickers[1];
 }
 
+int MimicMouseButFaster::catcher( Display *display, XErrorEvent *err ){
+  if( err->error_code == BadWindow )
+    log_warn( "BadWindow error -- leaving alone\n" );
+  else
+    log_error( "XErrorEvent of type %d\n", err->type );
+
+  return 0;
+}

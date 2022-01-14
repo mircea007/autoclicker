@@ -31,6 +31,8 @@ class MimicMouseButFaster {
     static void *worker( void *args );
     
     static void *listen( void *args );
+    
+    static int catcher( Display *display, XErrorEvent *err );
   
   public:
     MimicMouseButFaster( double cps );

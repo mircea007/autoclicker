@@ -22,7 +22,7 @@ make
 
 Usage:
 ```bash
-bin/autoclicker [CPS]
+bin/autoclicker [options] [--help] [--cps CPS]
 ```
 
 ## How it works
@@ -37,6 +37,5 @@ there are 5 threads running:
 
 ## TO DO
 
-* Crashes on window close
 * get rid of sudo requirement (would also merge `listen` and `worker` threads in `MimicMouseButFaster`)
 * user friendly (maybe system tray icon or gui application)
