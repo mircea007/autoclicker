@@ -1,6 +1,8 @@
 #include <unistd.h> // usleep()
 #include <fcntl.h>  // to read form mouse device file
 #include <stdlib.h> // system()
+#include <stdio.h>  // popen() / pclose()
+#include <string.h> // strcmp()
 
 #include "mimic.h"
 #include "log.h"
@@ -106,6 +108,28 @@ void *MimicMouseButFaster::listen( void *args ){
 MimicMouseButFaster::MimicMouseButFaster( double cps = DEFAULT_CPS ){
   clickers[0] = new AsyncAutoClicker( Button1, cps );
   clickers[1] = new AsyncAutoClicker( Button3, cps );
+  
+  const char *caps_lock_cmd = "xset -q | grep Caps | awk '{print $4}'";
+  char output[10];
+  FILE *pipe = popen( caps_lock_cmd, "r" );
+  if( !pipe )
+    log_error( "Could not read initial Caps_Lock state\n" );
+  
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wunused-result"// gcc magic to ingore usless warning
+
+  fgets( output, 10, pipe );
+  
+  #pragma GCC diagnostic pop
+
+  if( !strcmp( output, "on\n" ) ){
+    is_active = 1;
+  }else if( !strcmp( output, "off\n" ) ){
+    is_active = 0;
+  }else
+    log_error( "Caps_Lock command gave malformed output -- fix on github: https://github.com/mircea007/autoclicker\n" );
+  
+  pclose( pipe );
 
   fd = open( pDevice, O_RDWR );
   
@@ -115,7 +139,6 @@ MimicMouseButFaster::MimicMouseButFaster( double cps = DEFAULT_CPS ){
   status_flag = NORMAL;
   pthread_mutex_init( &status_flag_mtx, NULL );
 
-  is_active = 0;
   pthread_mutex_init( &is_active_mtx, NULL );
 
   display = XOpenDisplay( NULL );
