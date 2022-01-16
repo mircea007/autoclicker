@@ -1,17 +1,14 @@
-# Currently Unnamed Autoclicker
+# Clickr
 
 [![Linux](https://svgshare.com/i/Zhy.svg)](https://svgshare.com/i/Zhy.svg) [![GitHub version](https://badge.fury.io/gh/mircea007%2Fautoclicker.svg)](https://github.com/mircea007/autoclicker) [![GitHub stars](https://img.shields.io/github/stars/mircea007/autoclicker.svg?style=social&label=Star&maxAge=2592000)](https://github.com/mircea007/autoclicker/) [![GitHub watchers](https://img.shields.io/github/watchers/mircea007/autoclicker.svg?style=social&label=Watch&maxAge=2592000)](https://github.com/mircea007/autoclicker/watchers/)
 
-## Constraints
+A linux x11 (for now) autoclicker
 
-Is linux + X.org **only**.
-you must use sudo or add user to `input` group (for `/dev/input/mice`)
+## Features
 
-## Why?
-
-* sick [cps](https://cpstest.org/)
-* minecraft (also btw if you get banned it's not my fault)
-* it's cool (duh)
+* Toggle key is Caps Lock (because who really uses it?). Caps Lock is also closer to WASD keys so it's easy to reach
+* Very small overhead
+* Works for both right and left click
 
 ## How to run
 
