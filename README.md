@@ -9,7 +9,7 @@ A linux x11 (for now) autoclicker
 ## Features
 
 * Toggle key is Caps Lock (because who really uses it?). Caps Lock is also closer to WASD keys so it's easy to reach
-* Anti-bot detection (by randomizind intervals between clicks, in the future i will add buterfly/dracgclick mode for even better stealth)
+* Anti-bot detection (by randomizing intervals between clicks, in the future i will add buterfly/dracgclick mode for even better stealth)
 * Very small overhead
 * Works for both right and left click
 
