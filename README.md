@@ -21,8 +21,15 @@ make
 
 Usage:
 ```bash
-bin/autoclicker [options] [--help] [--cps CPS]
+sudo bin/clickr [options] [--help] [--cps CPS]
+
 ```
+options:
+
+* `-h`, `--help`: print help page & exit
+* `-w`: show warnings
+* `-i`: show info mesages
+* `-d`: show debug mesages
 
 ## How it works
 

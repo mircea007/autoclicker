@@ -126,19 +126,19 @@ MimicMouseButFaster::MimicMouseButFaster( double cps = DEFAULT_CPS ){
   
   #pragma GCC diagnostic pop
 
+  pclose( pipe );
+
   if( !strcmp( output, "on\n" ) ){
     is_active = 1;
   }else if( !strcmp( output, "off\n" ) ){
     is_active = 0;
   }else
     log_error( "Caps_Lock command gave malformed output -- fix on github: https://github.com/mircea007/autoclicker\n" );
-  
-  pclose( pipe );
 
   fd = open( pDevice, O_RDWR );
   
   if( fd == -1 )
-    log_error( "Coudn't open %s\n", pDevice );
+    log_error( "Coudn't open %s\n  -- make sure you are running with root permision or that you hava acces to the device file\n", pDevice );
   
   status_flag = NORMAL;
   pthread_mutex_init( &status_flag_mtx, NULL );
