@@ -141,9 +141,11 @@ MimicMouseButFaster::MimicMouseButFaster( double cps = DEFAULT_CPS ){
     log_error( "Coudn't open %s\n  -- make sure you are running with root permision or that you hava acces to the device file\n", pDevice );
   
   status_flag = NORMAL;
-  pthread_mutex_init( &status_flag_mtx, NULL );
+  if( pthread_mutex_init( &status_flag_mtx, NULL ) )
+    log_error( "Unable to create status_flag mutex\n" );
 
-  pthread_mutex_init( &is_active_mtx, NULL );
+  if( pthread_mutex_init( &is_active_mtx, NULL ) )
+    log_error( "Unable to create is_active mutex\n" );
 
   display = XOpenDisplay( NULL );
   if( !display )

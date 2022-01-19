@@ -84,7 +84,8 @@ AsyncAutoClicker::AsyncAutoClicker( unsigned int button, double cps = DEFAULT_CP
   pthread_mutex_init( &DELAY_mtx, NULL );
 
   status_flag = WAITING;
-  pthread_mutex_init( &status_flag_mtx, NULL );
+  if( pthread_mutex_init( &status_flag_mtx, NULL ) )
+    log_error( "Unable to create status_flag mutex\n" );
   
   while( thread_name[++i] );
 
