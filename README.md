@@ -6,7 +6,7 @@
 
 A linux x11 (for now) autoclicker.
 
-**Comming soon**: [eficient cps test](https://mircea.rebengiuc.com/cpstest)
+**Comming soon**: [eficient cps test](http://mircea.rebengiuc.com/cpstest)
 Why did i make a cps test tool when there are others online? -> because all of them crash @150 CPS
 
 ## Features
