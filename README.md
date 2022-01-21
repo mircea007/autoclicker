@@ -47,6 +47,6 @@ there are 5 threads running:
 
 ## TO DO
 
-* windows compatibility
+* windows compatibility (current work in progess)
 * get rid of sudo requirement (would also merge `listen` and `worker` threads in `MimicMouseButFaster`)
 * user friendly (maybe system tray icon or gui application)
