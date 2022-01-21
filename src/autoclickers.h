@@ -1,14 +1,17 @@
 #pragma once
 
+#include "log.h"
+#include "osdetect.h"
+
+const int DEFAULT_CPS = 20;
+
+#ifdef OS_IS_UNIX // linux/freebsd
+
 // X11
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
 #include <pthread.h>
-
-#include "log.h"
-
-const int DEFAULT_CPS = 20;
 
 // event type lookup table
 const int XEvent_types[33] = {
@@ -72,3 +75,64 @@ class AsyncAutoClicker : public SyncAutoClicker {
     
     ClickerStatus getStatus();
 };
+
+#else // windows
+
+#include <windows.h>
+
+class SyncAutoClicker {
+  protected:
+    double CPS;
+    int MIN_DELAY; // delays are in microseconds
+    int MAX_DELAY;
+    static const int RELEASE_WAIT = 100;
+    static constexpr double REL_MIN = 0.5;
+    static constexpr double REL_MAX = 1.5;
+    int btn;
+    DWORD buttons[3][2] = {
+      { MOUSEEVENTF_LEFTDOWN,   MOUSEEVENTF_LEFTUP   },
+      { MOUSEEVENTF_MIDDLEDOWN, MOUSEEVENTF_MIDDLEUP },
+      { MOUSEEVENTF_RIGHTDOWN,  MOUSEEVENTF_RIGHTUP  },
+    };
+
+    void click();
+
+  public:
+    SyncAutoClicker( int button, double cps );
+    
+    void setCPS( double cps );
+
+    ~SyncAutoClicker();
+
+    void autoclick( int num );
+};
+
+
+class AsyncAutoClicker : public SyncAutoClicker {
+  protected:
+    HANDLE worker_thread;
+
+    // shared variables
+    enum ClickerStatus { EXIT, CLICKING, WAITING } status_flag;
+    HANDLE status_flag_mtx;
+
+    //int MIN_DELAY, MAX_DELAY; // <--- already declared in parrent class
+    HANDLE DELAY_mtx;
+    
+    static DWORD WINAPI worker( LPVOID args );
+
+  public:
+    AsyncAutoClicker( int button, double cps );
+    
+    ~AsyncAutoClicker();
+
+    void setCPS( double cps );
+
+    void start();
+
+    void stop();
+    
+    ClickerStatus getStatus();
+};
+
+#endif
