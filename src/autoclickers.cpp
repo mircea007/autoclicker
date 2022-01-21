@@ -6,12 +6,23 @@
 #include "autoclickers.h"
 #include "osdetect.h"
 
-// will get rid of duplicated code with os-specific macros for threading
-
 #ifdef OS_IS_UNIX // linux
 
+#define create_thread( thread, function, args ) pthread_create( &thread, NULL, function, (void *)args )
+#define create_mutex( mutex ) pthread_mutex_init( &mutex, NULL )
+#define lock_mutex( mutex ) pthread_mutex_lock( &mutex )
+#define unlock_mutex( mutex ) pthread_mutex_unlock( &mutex )
+#define destroy_mutex( mutex ) pthread_mutex_destroy( &mutex )
+#define join_thread( thread ) pthread_join( thread, NULL )
+#define LPVOID void *
+#define thread_ret_type void *
+#define THREAD_FUNC_ATTR
+
 // implementation of SyncAutoClicker
-SyncAutoClicker::SyncAutoClicker( unsigned int button, double cps = DEFAULT_CPS ) : btn( button ){
+SyncAutoClicker::SyncAutoClicker( int button, double cps = DEFAULT_CPS ){
+  unsigned int buttons[3] = { Button1, Button2, Button3 };
+  btn = buttons[button];
+  
   setCPS( cps );
 
   display = XOpenDisplay( NULL );
@@ -24,15 +35,6 @@ SyncAutoClicker::SyncAutoClicker( unsigned int button, double cps = DEFAULT_CPS 
 
 SyncAutoClicker::~SyncAutoClicker(){
   XCloseDisplay( display );
-}
-
-void SyncAutoClicker::setCPS( double cps ){
-  int DELAY;
-
-  CPS = cps;
-  DELAY = 1'000'000 / CPS;
-  MIN_DELAY = DELAY * REL_MIN;
-  MAX_DELAY = DELAY * REL_MAX;
 }
 
 void SyncAutoClicker::click(){
@@ -74,106 +76,16 @@ void SyncAutoClicker::click(){
   usleep( RELEASE_WAIT );
 }
 
-void SyncAutoClicker::autoclick( int num ){
-  while( num-- ){
-    click();
-    usleep( MIN_DELAY + rand() % (MAX_DELAY - MIN_DELAY) );
-  }
-}
-
-// implementation of AsyncAutoClicker
-AsyncAutoClicker::AsyncAutoClicker( unsigned int button, double cps = DEFAULT_CPS ) : SyncAutoClicker( button, cps ){
-  char thread_name[100] = "clicker-";
-  int i = -1;
-  
-  pthread_mutex_init( &DELAY_mtx, NULL );
-
-  status_flag = WAITING;
-  if( pthread_mutex_init( &status_flag_mtx, NULL ) )
-    log_error( "Unable to create status_flag mutex\n" );
-  
-  while( thread_name[++i] );
-
-  if( button == Button1 )
-    strcpy( thread_name + i, "left" );
-  else
-    strcpy( thread_name + i, "right" );
-
-  pthread_create( &worker_thread, NULL, worker, (void *)this );
-  pthread_setname_np( worker_thread, thread_name );
-}
-
-AsyncAutoClicker::~AsyncAutoClicker(){
-  // set kill flag
-  pthread_mutex_lock( &status_flag_mtx );
-  status_flag = EXIT;
-  pthread_mutex_unlock( &status_flag_mtx );
-  
-  // wait for thread to finish
-  pthread_join( worker_thread, NULL );
-
-  pthread_mutex_destroy( &status_flag_mtx );
-  pthread_mutex_destroy( &DELAY_mtx );
-}
-
-void *AsyncAutoClicker::worker( void *args ){
-  AsyncAutoClicker *obj = (AsyncAutoClicker *)args;
-  
-  log_info( "autoclicker initialized\n" );
-  
-  pthread_mutex_lock( &obj->status_flag_mtx );
-  while( obj->status_flag != EXIT ){
-    if( obj->status_flag == CLICKING )
-      obj->click();
-
-    pthread_mutex_unlock( &obj->status_flag_mtx );
-    pthread_mutex_lock( &obj->DELAY_mtx );
-
-    usleep( obj->MIN_DELAY + rand() % (obj->MAX_DELAY - obj->MIN_DELAY) );
-
-    pthread_mutex_unlock( &obj->DELAY_mtx );
-    pthread_mutex_lock( &obj->status_flag_mtx );
-  }
-
-  return NULL;
-}
-
-void AsyncAutoClicker::setCPS( double cps ){
-  int DELAY;
-
-  pthread_mutex_lock( &DELAY_mtx );
-
-  CPS = cps;
-  DELAY = 1'000'000 / CPS;
-  MIN_DELAY = DELAY * REL_MIN;
-  MAX_DELAY = DELAY * REL_MAX;
-
-  pthread_mutex_unlock( &DELAY_mtx );
-}
-
-void AsyncAutoClicker::start(){
-  pthread_mutex_lock( &status_flag_mtx );
-  status_flag = CLICKING;
-  pthread_mutex_unlock( &status_flag_mtx );
-}
-
-void AsyncAutoClicker::stop(){
-  pthread_mutex_lock( &status_flag_mtx );
-  status_flag = WAITING;
-  pthread_mutex_unlock( &status_flag_mtx );
-}
-
-AsyncAutoClicker::ClickerStatus AsyncAutoClicker::getStatus(){
-  ClickerStatus retval;
-  
-  pthread_mutex_lock( &status_flag_mtx );
-  retval = status_flag;
-  pthread_mutex_unlock( &status_flag_mtx );
-  
-  return retval;
-}
-
 #else // windows -- surprisingly little code
+
+#define create_thread( thread, function, args ) thread = CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE) function, (LPVOID)args, 0, NULL )
+#define create_mutex( mutex ) !(mutex = CreateMutex( NULL, FALSE, NULL ))
+#define lock_mutex( mutex ) WaitForSingleObject( mutex, INFINITE )
+#define unlock_mutex( mutex ) ReleaseMutex( mutex )
+#define destroy_mutex( mutex ) CloseHandle( mutex )
+#define join_thread( thread ) WaitForSingleObject( thread, INFINITE )
+#define thread_ret_type DWORD
+#define THREAD_FUNC_ATTR WINAPI
 
 // implementation of SyncAutoClicker
 SyncAutoClicker::SyncAutoClicker( unsigned int button, double cps = DEFAULT_CPS ) : btn( button ){
@@ -184,6 +96,36 @@ SyncAutoClicker::SyncAutoClicker( unsigned int button, double cps = DEFAULT_CPS 
 
 SyncAutoClicker::~SyncAutoClicker(){}
 
+SyncAutoClicker::click(){
+  INPUT Inputs[2];
+
+  Inputs[0].type = INPUT_MOUSE;
+  Inputs[0].mi.dwFlags = buttons[btn][0];
+
+  Inputs[1].type = INPUT_MOUSE;
+  Inputs[1].mi.dwFlags = buttons[btn][1];
+
+  SendInput( 2, Inputs, sizeof( INPUT ) );
+}
+
+// https://stackoverflow.com/questions/5801813/c-usleep-is-obsolete-workarounds-for-windows-mingw
+void usleep( __int64 usec ){
+  HANDLE timer; 
+  LARGE_INTEGER ft;
+
+  ft.QuadPart = -(10 * usec); // Convert to 100 nanosecond interval, negative value indicates relative time
+
+  timer = CreateWaitableTimer( NULL, TRUE, NULL ); 
+  SetWaitableTimer( timer, &ft, 0, NULL, NULL, 0 ); 
+  WaitForSingleObject( timer, INFINITE ); 
+  CloseHandle( timer ); 
+}
+
+#endif
+
+// os-neutral code
+
+// SyncAutoClicker
 void SyncAutoClicker::setCPS( double cps ){
   int DELAY;
 
@@ -200,101 +142,84 @@ void SyncAutoClicker::autoclick( int num ){
   }
 }
 
-SyncAutoClicker::click(){
-  INPUT Inputs[2];
-
-  Inputs[0].type = INPUT_MOUSE;
-  Inputs[0].mi.dwFlags = buttons[btn][0];
-
-  Inputs[1].type = INPUT_MOUSE;
-  Inputs[1].mi.dwFlags = buttons[btn][1];
-
-  SendInput( 2, Inputs, sizeof( INPUT ) );
-}
-
-// implementation of AsyncAutoClicker
-AsyncAutoClicker::AsyncAutoClicker( unsigned int button, double cps = DEFAULT_CPS ) : SyncAutoClicker( button, cps ){
-  DELAY_mtx = CreateMutex( NULL, FALSE, NULL );
-  if( !DELAY_mtx )
+// AsyncAutoClicker
+AsyncAutoClicker::AsyncAutoClicker( int button, double cps = DEFAULT_CPS ) : SyncAutoClicker( button, cps ){
+  if( create_mutex( DELAY_mtx ) )
     log_error( "Unable to create DELAY mutex\n" );
 
   status_flag = WAITING;
-  
-  status_flag_mtx = CreateMutex( NULL, FALSE, NULL );
-  if( !status_flag_mtx )
-    log_error( "Unable to create status_flag mutex\n" );
 
-  worker_thread = CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE) worker, (LPVOID)this, 0, &ThreadID );
+  if( create_mutex( status_flag_mtx ) )
+    log_error( "Unable to create status_flag mutex\n" );
+  
+  create_thread( worker_thread, worker, this );
 }
 
 AsyncAutoClicker::~AsyncAutoClicker(){
   // set kill flag
-  WaitForSingleObject( status_flag_mtx, INFINITE );
+  lock_mutex( status_flag_mtx );
   status_flag = EXIT;
-  ReleaseMutex( status_flag_mtx );
-
-  // wait for thread to finish
-  WaitForSingleObject( worker_thread, INFINITE );
-
-  CloseHandle( status_flag_mtx );
-  CloseHandle( DELAY_mtx );
-}
-
-DWORD WINAPI AsyncAutoClicker::worker( LPVOID args ){
-  AsyncAutoClicker *obj = (AsyncAutoClicker *)args;
+  unlock_mutex( status_flag_mtx );
   
-  log_info( "autoclicker initialized\n" );
-  
-  WaitForSingleObject( obj->status_flag_mtx, INFINITE );
-  while( obj->status_flag != EXIT ){
-    if( obj->status_flag == CLICKING )
-      obj->click();
+  join_thread( worker_thread ); // wait for thread to finish
 
-    ReleaseMutex( obj->status_flag_mtx );
-    WaitForSingleObject( obj->DELAY_mtx, INFINITE );
-
-    usleep( obj->MIN_DELAY + rand() % (obj->MAX_DELAY - obj->MIN_DELAY) );
-
-    ReleaseMutex( obj->DELAY_mtx );
-    WaitForSingleObject( obj->status_flag_mtx, INFINITE );
-  }
-
-  return 0;
+  destroy_mutex( status_flag_mtx );
+  destroy_mutex( DELAY_mtx );
 }
 
 void AsyncAutoClicker::setCPS( double cps ){
   int DELAY;
 
-  WaitForSingleObject( DELAY_mtx, INFINITE );
+  lock_mutex( DELAY_mtx );
 
   CPS = cps;
   DELAY = 1'000'000 / CPS;
   MIN_DELAY = DELAY * REL_MIN;
   MAX_DELAY = DELAY * REL_MAX;
 
-  ReleaseMutex( DELAY_mtx );
+  unlock_mutex( DELAY_mtx );
 }
 
 void AsyncAutoClicker::start(){
-  WaitForSingleObject( status_flag_mtx, INFINITE );
+  lock_mutex( status_flag_mtx );
   status_flag = CLICKING;
-  ReleaseMutex( status_flag_mtx );
+  unlock_mutex( status_flag_mtx );
 }
 
 void AsyncAutoClicker::stop(){
-  WaitForSingleObject( status_flag_mtx, INFINITE );
+  lock_mutex( status_flag_mtx );
   status_flag = WAITING;
-  ReleaseMutex( status_flag_mtx );
+  unlock_mutex( status_flag_mtx );
 }
 
 AsyncAutoClicker::ClickerStatus AsyncAutoClicker::getStatus(){
   ClickerStatus retval;
   
-  WaitForSingleObject( status_flag_mtx, INFINITE );
+  lock_mutex( status_flag_mtx );
   retval = status_flag;
-  ReleaseMutex( status_flag_mtx );
+  unlock_mutex( status_flag_mtx );
   
   return retval;
 }
 
-#endif
+thread_ret_type THREAD_FUNC_ATTR AsyncAutoClicker::worker( LPVOID args ){
+  AsyncAutoClicker *obj = (AsyncAutoClicker *)args;
+  
+  log_info( "autoclicker initialized\n" );
+  
+  lock_mutex( obj->status_flag_mtx );
+  while( obj->status_flag != EXIT ){
+    if( obj->status_flag == CLICKING )
+      obj->click();
+
+    unlock_mutex( obj->status_flag_mtx );
+    lock_mutex( obj->DELAY_mtx );
+
+    usleep( obj->MIN_DELAY + rand() % (obj->MAX_DELAY - obj->MIN_DELAY) );
+
+    unlock_mutex( obj->DELAY_mtx );
+    lock_mutex( obj->status_flag_mtx );
+  }
+
+  return (thread_ret_type)0;
+}

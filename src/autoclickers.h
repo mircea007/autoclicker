@@ -39,7 +39,7 @@ class SyncAutoClicker {
     void click();
 
   public:
-    SyncAutoClicker( unsigned int button, double cps );
+    SyncAutoClicker( int button, double cps );
     
     void setCPS( double cps );
 
@@ -63,7 +63,7 @@ class AsyncAutoClicker : public SyncAutoClicker {
     static void *worker( void *args );
 
   public:
-    AsyncAutoClicker( unsigned int button, double cps );
+    AsyncAutoClicker( int button, double cps );
     
     ~AsyncAutoClicker();
 
