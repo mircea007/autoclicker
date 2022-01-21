@@ -4,19 +4,8 @@
 #include <string.h>  // memset()
 
 #include "autoclickers.h"
-#include "osdetect.h"
 
 #ifdef OS_IS_UNIX // linux
-
-#define create_thread( thread, function, args ) pthread_create( &thread, NULL, function, (void *)args )
-#define create_mutex( mutex ) pthread_mutex_init( &mutex, NULL )
-#define lock_mutex( mutex ) pthread_mutex_lock( &mutex )
-#define unlock_mutex( mutex ) pthread_mutex_unlock( &mutex )
-#define destroy_mutex( mutex ) pthread_mutex_destroy( &mutex )
-#define join_thread( thread ) pthread_join( thread, NULL )
-#define LPVOID void *
-#define thread_ret_type void *
-#define THREAD_FUNC_ATTR
 
 // implementation of SyncAutoClicker
 SyncAutoClicker::SyncAutoClicker( int button, double cps = DEFAULT_CPS ){
@@ -40,6 +29,8 @@ SyncAutoClicker::~SyncAutoClicker(){
 void SyncAutoClicker::click(){
   // create event
   XEvent event;
+  
+  log_debug_bypass( "clicking..." );
   
   memset( &event, 0, sizeof( event ) );
   event.xbutton.button      = btn;
@@ -78,15 +69,6 @@ void SyncAutoClicker::click(){
 
 #else // windows -- surprisingly little code
 
-#define create_thread( thread, function, args ) thread = CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE) function, (LPVOID)args, 0, NULL )
-#define create_mutex( mutex ) !(mutex = CreateMutex( NULL, FALSE, NULL ))
-#define lock_mutex( mutex ) WaitForSingleObject( mutex, INFINITE )
-#define unlock_mutex( mutex ) ReleaseMutex( mutex )
-#define destroy_mutex( mutex ) CloseHandle( mutex )
-#define join_thread( thread ) WaitForSingleObject( thread, INFINITE )
-#define thread_ret_type DWORD
-#define THREAD_FUNC_ATTR WINAPI
-
 // implementation of SyncAutoClicker
 SyncAutoClicker::SyncAutoClicker( unsigned int button, double cps = DEFAULT_CPS ) : btn( button ){
   setCPS( cps );
@@ -106,19 +88,6 @@ SyncAutoClicker::click(){
   Inputs[1].mi.dwFlags = buttons[btn][1];
 
   SendInput( 2, Inputs, sizeof( INPUT ) );
-}
-
-// https://stackoverflow.com/questions/5801813/c-usleep-is-obsolete-workarounds-for-windows-mingw
-void usleep( __int64 usec ){
-  HANDLE timer; 
-  LARGE_INTEGER ft;
-
-  ft.QuadPart = -(10 * usec); // Convert to 100 nanosecond interval, negative value indicates relative time
-
-  timer = CreateWaitableTimer( NULL, TRUE, NULL ); 
-  SetWaitableTimer( timer, &ft, 0, NULL, NULL, 0 ); 
-  WaitForSingleObject( timer, INFINITE ); 
-  CloseHandle( timer ); 
 }
 
 #endif

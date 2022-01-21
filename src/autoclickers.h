@@ -1,9 +1,13 @@
 #pragma once
 
 #include "log.h"
-#include "osdetect.h"
+#include "os_specific.h"
 
 const int DEFAULT_CPS = 20;
+
+#define LEFT_CLICK 0
+#define MIDDLE_CLICK 1
+#define RIGHT_CLICK 2
 
 #ifdef OS_IS_UNIX // linux/freebsd
 

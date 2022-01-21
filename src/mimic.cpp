@@ -110,8 +110,8 @@ void *MimicMouseButFaster::listen( void *args ){
 }
 
 MimicMouseButFaster::MimicMouseButFaster( double cps = DEFAULT_CPS ){
-  clickers[0] = new AsyncAutoClicker( Button1, cps );
-  clickers[1] = new AsyncAutoClicker( Button3, cps );
+  clickers[0] = new AsyncAutoClicker( LEFT_CLICK, cps );
+  clickers[1] = new AsyncAutoClicker( RIGHT_CLICK, cps );
   
   const char *caps_lock_cmd = "xset -q | grep Caps | awk '{print $4}'";
   char output[10];
