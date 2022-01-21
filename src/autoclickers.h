@@ -52,34 +52,6 @@ class SyncAutoClicker {
     void autoclick( int num );
 };
 
-
-class AsyncAutoClicker : public SyncAutoClicker {
-  protected:
-    pthread_t worker_thread;
-
-    // shared variables
-    enum ClickerStatus { EXIT, CLICKING, WAITING } status_flag;
-    pthread_mutex_t status_flag_mtx;
-
-    //int MIN_DELAY, MAX_DELAY; // <--- already declared in parrent class
-    pthread_mutex_t DELAY_mtx;
-    
-    static void *worker( void *args );
-
-  public:
-    AsyncAutoClicker( int button, double cps );
-    
-    ~AsyncAutoClicker();
-
-    void setCPS( double cps );
-
-    void start();
-
-    void stop();
-    
-    ClickerStatus getStatus();
-};
-
 #else // windows
 
 #include <windows.h>
@@ -111,19 +83,22 @@ class SyncAutoClicker {
     void autoclick( int num );
 };
 
+#endif
+
+// os-neutral
 
 class AsyncAutoClicker : public SyncAutoClicker {
   protected:
-    HANDLE worker_thread;
+    thread_t worker_thread;
 
     // shared variables
     enum ClickerStatus { EXIT, CLICKING, WAITING } status_flag;
-    HANDLE status_flag_mtx;
+    mutex_t status_flag_mtx;
 
     //int MIN_DELAY, MAX_DELAY; // <--- already declared in parrent class
-    HANDLE DELAY_mtx;
+    mutex_t DELAY_mtx;
     
-    static DWORD WINAPI worker( LPVOID args );
+    static thread_ret_type THREAD_FUNC_ATTR worker( LPVOID args );
 
   public:
     AsyncAutoClicker( int button, double cps );
@@ -138,5 +113,3 @@ class AsyncAutoClicker : public SyncAutoClicker {
     
     ClickerStatus getStatus();
 };
-
-#endif
