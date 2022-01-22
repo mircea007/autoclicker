@@ -30,8 +30,6 @@ void SyncAutoClicker::click(){
   // create event
   XEvent event;
   
-  log_debug_bypass( "clicking..." );
-  
   memset( &event, 0, sizeof( event ) );
   event.xbutton.button      = btn;
   event.xbutton.same_screen = True;

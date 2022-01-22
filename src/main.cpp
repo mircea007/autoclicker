@@ -1,12 +1,16 @@
 #include <stdio.h>   // duh
-#include <unistd.h>  // usleep()
 #include <signal.h>  // Ctrl+C
 #include <string.h>  // strcmp()
 
-#include <pthread.h> // for async stuff
-
 #include "log.h"
 #include "mimic.h"
+#include "os_specific.h"
+
+#ifdef OS_IS_UNIX
+
+#include <unistd.h>  // usleep()
+
+#endif
 
 MimicMouseButFaster *copy;
 
@@ -40,8 +44,6 @@ int main( int argc, char *argv[] ){
   int arg, i;
   int do_warn, do_info, do_debug, do_help;
   
-  pthread_setname_np( pthread_self(), "main" );
-
   for( i = 0 ; i < 128 ; i++ )
     frecv[i] = 0;
   
