@@ -2,6 +2,7 @@
 
 #ifdef OS_IS_WINDOWS
 
+// https://stackoverflow.com/questions/5801813/c-usleep-is-obsolete-workarounds-for-windows-mingw
 void usleep( __int64 usec ){
   HANDLE timer; 
   LARGE_INTEGER ft;
