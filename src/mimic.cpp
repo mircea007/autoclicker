@@ -7,6 +7,8 @@
 #include "mimic.h"
 #include "log.h"
 
+#ifdef OS_IS_UNIX // linux
+
 void *MimicMouseButFaster::worker( void *args ){
   MimicMouseButFaster *obj = (MimicMouseButFaster *)args;
   int bytes, left = 0, right = 0, newleft, newright;
@@ -159,10 +161,8 @@ MimicMouseButFaster::MimicMouseButFaster( double cps = DEFAULT_CPS ){
   XSelectInput( display, curFocus, LISTEN_MASK );
 
   pthread_create( &worker_thread, NULL, worker, (void *)this );
-  pthread_setname_np( worker_thread, "worker" );
 
   pthread_create( &listen_thread, NULL, listen, (void *)this );
-  pthread_setname_np( listen_thread, "listen" );
 }
 
 MimicMouseButFaster::~MimicMouseButFaster(){
@@ -205,3 +205,73 @@ int MimicMouseButFaster::catcher( Display *display, XErrorEvent *err ){
 
   return 0;
 }
+
+#else // windows
+
+const int STATUS_CHECK_DELAY = 50; // make smaller for faster checks (beware this will increase CPU usage)
+const int KEY_STATE_MASK = 0x8000;
+const int NUM_MOUSE_BTN = 3;
+const int button_keys[3] = { VK_LBUTTON, VK_MBUTTON, VK_RBUTTON };
+
+thread_ret_type MimicMouseButFaster::worker( LPVOID args ){
+  MimicMouseButFaster *obj = (MimicMouseButFaster *)args;
+  int is_active;
+  int mouse_states[3] = { 0, 0, 0 };
+  int new_state;
+  int i;
+  
+  lock_mutex( obj->status_flag_mtx );
+  while( obj->status_flag != EXIT ){
+    unlock_mutex( obj->status_flag_mtx );
+    
+    is_active = !!(GetAsyncKeyState( VK_CAPITAL ) & KEY_STATE_MASK);
+    
+    for( i = 0 ; i < NUM_MOUSE_BTN ; i++ ){
+      new_state = !!(GetAsyncKeyState( button_keys[i] ) & KEY_STATE_MASK);
+      
+      if( obj->clickers[i] && is_active ){
+        switch( new_state + 2 * mouse_states[i] ){
+          case 2:
+            obj->clickers[i]->stop();
+            break;
+          case 1:
+            obj->clickers[i]->start();
+            break;
+        }
+      }
+      
+      mouse_states[i] = new_state;
+    }
+    
+    usleep( STATUS_CHECK_DELAY );
+    
+    lock_mutex( obj->status_flag_mtx );
+  }
+  
+  return (thread_ret_type)0;
+}
+
+MimicMouseButFaster::MimicMouseButFaster( double cps ){
+  clickers[0] = new AsyncAutoClicker( LEFT_CLICK, cps );
+  clickers[1] = NULL;
+  clickers[2] = new AsyncAutoClicker( RIGHT_CLICK, cps );
+  
+  status_flag = NORMAL;
+  if( create_mutex( status_flag_mtx ) )
+    log_error( "Unable to create status_flag mutex\n" );
+  
+  create_thread( worker_thread, worker, this );
+}
+
+MimicMouseButFaster::~MimicMouseButFaster(){
+  lock_mutex( status_flag_mtx );
+  status_flag = EXIT;
+  unlock_mutex( status_flag_mtx );
+
+  join_thread( worker_thread );
+  
+  delete clickers[0];
+  delete clickers[1];
+}
+
+#endif

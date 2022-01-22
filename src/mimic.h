@@ -3,6 +3,9 @@
 #include <pthread.h> // for async stuff
 
 #include "autoclickers.h"
+#include "os_specific.h"
+
+#ifdef OS_IS_UNIX // linux
 
 class MimicMouseButFaster {
   protected:
@@ -39,3 +42,25 @@ class MimicMouseButFaster {
 
     ~MimicMouseButFaster();
 };
+
+#else // windows
+
+class MimicMouseButFaster {
+  protected:
+    AsyncAutoClicker *clickers[2];
+
+    thread_t worker_thread; // listens to mouse state
+
+    // shared variables
+    enum ListenerStatus { EXIT, NORMAL } status_flag;
+    mutex_t status_flag_mtx;
+    
+    static thread_ret_type THREAD_FUNC_ATTR worker( LPVOID args );
+
+  public:
+    MimicMouseButFaster( double cps );
+
+    ~MimicMouseButFaster();
+};
+
+#endif
