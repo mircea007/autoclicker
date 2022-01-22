@@ -1,13 +1,13 @@
+#include "mimic.h"
+#include "log.h"
+
+#ifdef OS_IS_UNIX // linux
+
 #include <unistd.h> // usleep()
 #include <fcntl.h>  // to read form mouse device file
 #include <stdlib.h> // system()
 #include <stdio.h>  // popen() / pclose()
 #include <string.h> // strcmp()
-
-#include "mimic.h"
-#include "log.h"
-
-#ifdef OS_IS_UNIX // linux
 
 void *MimicMouseButFaster::worker( void *args ){
   MimicMouseButFaster *obj = (MimicMouseButFaster *)args;

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <pthread.h> // for async stuff
-
 #include "autoclickers.h"
 #include "os_specific.h"
 
 #ifdef OS_IS_UNIX // linux
+
+#include <pthread.h> // for async stuff
 
 class MimicMouseButFaster {
   protected:
