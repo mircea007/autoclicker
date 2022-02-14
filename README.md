@@ -46,7 +46,7 @@ there are 5 threads running:
 
 ## TO DO
 
-* **TEST WINDOWS VERSION**
-* make windows version of MimicMouseButFaster have an event loop instead
+* **add event loop in windows version**
+* add user configuration
 * get rid of sudo requirement in linux version (would also merge `listen` and `worker` threads in `MimicMouseButFaster`)
 * user friendly (maybe system tray icon or gui application)
