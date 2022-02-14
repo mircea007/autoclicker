@@ -105,7 +105,7 @@ void SyncAutoClicker::setCPS( double cps ){
 void SyncAutoClicker::autoclick( int num ){
   while( num-- ){
     click();
-    usleep( MIN_DELAY + rand() % (MAX_DELAY - MIN_DELAY) );
+    usleep( MIN_DELAY + rand() % (MAX_DELAY - MIN_DELAY + 1) );
   }
 }
 
@@ -182,7 +182,7 @@ thread_ret_type THREAD_FUNC_ATTR AsyncAutoClicker::worker( LPVOID args ){
     unlock_mutex( obj->status_flag_mtx );
     lock_mutex( obj->DELAY_mtx );
 
-    usleep( obj->MIN_DELAY + rand() % (obj->MAX_DELAY - obj->MIN_DELAY) );
+    usleep( obj->MIN_DELAY + rand() % (obj->MAX_DELAY - obj->MIN_DELAY + 1) );
 
     unlock_mutex( obj->DELAY_mtx );
     lock_mutex( obj->status_flag_mtx );

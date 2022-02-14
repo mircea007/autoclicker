@@ -34,8 +34,8 @@ class SyncAutoClicker {
     int MIN_DELAY; // delays are in microseconds
     int MAX_DELAY;
     static const int RELEASE_WAIT = 100;
-    static constexpr double REL_MIN = 0.5;
-    static constexpr double REL_MAX = 1.5;
+    static constexpr double REL_MIN = 0.75;
+    static constexpr double REL_MAX = 1.25;
     Display *display;
     unsigned int btn;
 
@@ -62,8 +62,8 @@ class SyncAutoClicker {
     int MIN_DELAY; // delays are in microseconds
     int MAX_DELAY;
     static const int RELEASE_WAIT = 100;
-    static constexpr double REL_MIN = 0.5;
-    static constexpr double REL_MAX = 1.5;
+    static constexpr double REL_MIN = 0.75;
+    static constexpr double REL_MAX = 1.25;
     int btn;
     DWORD buttons[3][2] = {
       { MOUSEEVENTF_LEFTDOWN,   MOUSEEVENTF_LEFTUP   },
