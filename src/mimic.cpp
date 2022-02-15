@@ -210,6 +210,8 @@ int MimicMouseButFaster::catcher( Display *display, XErrorEvent *err ){
 
 #include <windows.h> // winapi
 
+MimicMouseButFaster *MimicMouseButFaster::instance;// static instance pointer
+
 const int STATUS_CHECK_DELAY = 50; // make smaller for faster checks (beware this will increase CPU usage)
 const int KEY_STATE_MASK = 0x8000;
 const int NUM_MOUSE_BTN = 3;
@@ -226,7 +228,8 @@ thread_ret_type MimicMouseButFaster::worker( LPVOID args ){
   while( obj->status_flag != EXIT ){
     unlock_mutex( obj->status_flag_mtx );
     
-    is_active = !!(GetAsyncKeyState( VK_CAPITAL ) & KEY_STATE_MASK);
+    is_active ^= !!((GetAsyncKeyState( VK_CAPITAL ) & 0x0001));
+    log_debug( "is_active = %d\n", is_active );
     
     for( i = 0 ; i < NUM_MOUSE_BTN ; i++ ){
       new_state = !!(GetAsyncKeyState( button_keys[i] ) & KEY_STATE_MASK);
@@ -254,6 +257,11 @@ thread_ret_type MimicMouseButFaster::worker( LPVOID args ){
 }
 
 MimicMouseButFaster::MimicMouseButFaster( double cps ){
+  if( instance ){
+    delete instance;
+    instance = this;
+  }
+
   clickers[0] = new AsyncAutoClicker( LEFT_CLICK, cps );
   clickers[1] = NULL;
   clickers[2] = new AsyncAutoClicker( RIGHT_CLICK, cps );
@@ -274,6 +282,8 @@ MimicMouseButFaster::~MimicMouseButFaster(){
   
   delete clickers[0];
   delete clickers[1];
+
+  instance = NULL;
 }
 
 #endif

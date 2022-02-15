@@ -60,6 +60,8 @@ class MimicMouseButFaster {
     static thread_ret_type THREAD_FUNC_ATTR worker( LPVOID args );
 
   public:
+    static MimicMouseButFaster *instance = NULL; // singleton class because i can't pass the event callback function any arguments 
+
     MimicMouseButFaster( double cps );
 
     ~MimicMouseButFaster();
