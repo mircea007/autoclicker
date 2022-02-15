@@ -210,7 +210,7 @@ int MimicMouseButFaster::catcher( Display *display, XErrorEvent *err ){
 
 #include <windows.h> // winapi
 
-MimicMouseButFaster *MimicMouseButFaster::instance;// static instance pointer
+MimicMouseButFaster *MimicMouseButFaster::instance = NULL;// static instance pointer
 
 const int STATUS_CHECK_DELAY = 50; // make smaller for faster checks (beware this will increase CPU usage)
 const int KEY_STATE_MASK = 0x8000;
@@ -219,7 +219,7 @@ const int button_keys[3] = { VK_LBUTTON, VK_MBUTTON, VK_RBUTTON };
 
 thread_ret_type MimicMouseButFaster::worker( LPVOID args ){
   MimicMouseButFaster *obj = (MimicMouseButFaster *)args;
-  int is_active;
+  int is_active = 0;
   int mouse_states[3] = { 0, 0, 0 };
   int new_state;
   int i;
