@@ -5,6 +5,9 @@ LDFLAGS  = -lpthread -lX11
 bin/clickr: bin/main.o bin/log.o bin/autoclickers.o bin/mimic.o bin/os_specific.o | bin
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o bin/clickr bin/main.o bin/log.o bin/autoclickers.o bin/mimic.o
 
+bin/clickr-win: bin/main.o bin/log.o bin/autoclickers.o bin/mimic.o bin/os_specific.o | bin
+	$(CXX) $(CXXFLAGS) -o bin/clickr-win bin/main.o bin/log.o bin/autoclickers.o bin/mimic.o
+
 bin/main.o: src/main.cpp src/log.h src/mimic.h src/os_specific.h | bin
 	$(CXX) $(CXXFLAGS) -c -o bin/main.o src/main.cpp
 

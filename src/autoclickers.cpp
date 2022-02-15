@@ -7,6 +7,17 @@
 
 #ifdef OS_IS_UNIX // linux
 
+// event type lookup table
+const int XEvent_types[33] = {
+  KeyPress,       KeyRelease,       ButtonPress,     ButtonRelease,    MotionNotify,
+  EnterNotify,    LeaveNotify,      FocusIn,         FocusOut,         KeymapNotify,
+  Expose,         GraphicsExpose,   NoExpose,        CirculateRequest, ConfigureRequest,
+  MapRequest,     ResizeRequest,    CirculateNotify, ConfigureNotify,  CreateNotify,
+  DestroyNotify,  GravityNotify,    MapNotify,       MappingNotify,    ReparentNotify,
+  UnmapNotify,    VisibilityNotify, ColormapNotify,  ClientMessage,    PropertyNotify,
+  SelectionClear, SelectionNotify,  SelectionRequest
+};
+
 // implementation of SyncAutoClicker
 SyncAutoClicker::SyncAutoClicker( int button, double cps = DEFAULT_CPS ){
   unsigned int buttons[3] = { Button1, Button2, Button3 };
@@ -68,7 +79,7 @@ void SyncAutoClicker::click(){
 #else // windows -- surprisingly little code
 
 // implementation of SyncAutoClicker
-SyncAutoClicker::SyncAutoClicker( unsigned int button, double cps = DEFAULT_CPS ) : btn( button ){
+SyncAutoClicker::SyncAutoClicker( int button, double cps = DEFAULT_CPS ) : btn( button ){
   setCPS( cps );
 
   srand( time( NULL ) );
@@ -76,7 +87,7 @@ SyncAutoClicker::SyncAutoClicker( unsigned int button, double cps = DEFAULT_CPS 
 
 SyncAutoClicker::~SyncAutoClicker(){}
 
-SyncAutoClicker::click(){
+void SyncAutoClicker::click(){
   INPUT Inputs[2];
 
   Inputs[0].type = INPUT_MOUSE;

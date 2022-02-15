@@ -1,16 +1,11 @@
 #include <stdio.h>   // duh
 #include <signal.h>  // Ctrl+C
 #include <string.h>  // strcmp()
+#include <unistd.h>  // usleep()
 
 #include "log.h"
 #include "mimic.h"
 #include "os_specific.h"
-
-#ifdef OS_IS_UNIX
-
-#include <unistd.h>  // usleep()
-
-#endif
 
 MimicMouseButFaster *copy;
 

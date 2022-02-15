@@ -45,9 +45,11 @@ class MimicMouseButFaster {
 
 #else // windows
 
+#include <windows.h> // winapi
+
 class MimicMouseButFaster {
   protected:
-    AsyncAutoClicker *clickers[2];
+    AsyncAutoClicker *clickers[3];
 
     thread_t worker_thread; // listens to mouse state
 

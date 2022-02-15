@@ -39,7 +39,4 @@
 #define destroy_mutex( mutex ) CloseHandle( mutex )
 #define join_thread( thread ) WaitForSingleObject( thread, INFINITE )
 
-// sleep function
-void usleep( __int64 usec );
-
 #endif

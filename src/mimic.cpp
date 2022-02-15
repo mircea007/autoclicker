@@ -1,9 +1,9 @@
 #include "mimic.h"
 #include "log.h"
+#include <unistd.h> // usleep()
 
 #ifdef OS_IS_UNIX // linux
 
-#include <unistd.h> // usleep()
 #include <fcntl.h>  // to read form mouse device file
 #include <stdlib.h> // system()
 #include <stdio.h>  // popen() / pclose()
@@ -207,6 +207,8 @@ int MimicMouseButFaster::catcher( Display *display, XErrorEvent *err ){
 }
 
 #else // windows
+
+#include <windows.h> // winapi
 
 const int STATUS_CHECK_DELAY = 50; // make smaller for faster checks (beware this will increase CPU usage)
 const int KEY_STATE_MASK = 0x8000;

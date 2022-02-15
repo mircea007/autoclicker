@@ -17,17 +17,6 @@ const int DEFAULT_CPS = 20;
 
 #include <pthread.h>
 
-// event type lookup table
-const int XEvent_types[33] = {
-  KeyPress,       KeyRelease,       ButtonPress,     ButtonRelease,    MotionNotify,
-  EnterNotify,    LeaveNotify,      FocusIn,         FocusOut,         KeymapNotify,
-  Expose,         GraphicsExpose,   NoExpose,        CirculateRequest, ConfigureRequest,
-  MapRequest,     ResizeRequest,    CirculateNotify, ConfigureNotify,  CreateNotify,
-  DestroyNotify,  GravityNotify,    MapNotify,       MappingNotify,    ReparentNotify,
-  UnmapNotify,    VisibilityNotify, ColormapNotify,  ClientMessage,    PropertyNotify,
-  SelectionClear, SelectionNotify,  SelectionRequest
-};
-
 class SyncAutoClicker {
   protected:
     double CPS;
